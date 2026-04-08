@@ -449,9 +449,9 @@ body {
         <h4>AGM &amp; committee</h4>
         <p>Share this dashboard link with your committee and present the total social value figure at your AGM. It contextualises the club's contribution beyond just football results.</p>
       </div>
-      <div class="use-box">
-        <h4>Active Partnership &amp; NGB submissions</h4>
-        <p>Your figures feed into your Active Partnership's area-wide picture — this is your club's individual breakdown. Use it in Active Partnership conversations, NGB submissions, or FA Charter Standard reviews.</p>
+      <div class="use-box" id="useBoxNGB">
+        <h4 id="useBoxNGBTitle">NGB &amp; partner submissions</h4>
+        <p id="useBoxNGBText">Your figures feed into the wider picture — this is your club's individual breakdown. Use it in any NGB, County FA, Active Partnership or funder conversations.</p>
       </div>
     </div>
 
@@ -538,6 +538,15 @@ function renderDashboard(d) {
   set('statVol',     d.num_vol       || '0');
   set('statND',      d.nd_players || '—');
   set('statMH',      d.mh_players || '—');
+
+  // "Using your report" third box — context-aware by tool version
+  if (d.tool_version === 'football') {
+    set('useBoxNGBTitle', 'County FA &amp; NGB submissions');
+    set('useBoxNGBText', 'Your figures are already in the County FA aggregate — this is your individual breakdown. Use it in any County FA development submissions or FA Charter Standard reviews.');
+  } else {
+    set('useBoxNGBTitle', 'Active Partnership &amp; NGB submissions');
+    set('useBoxNGBText', 'Your figures feed into your Active Partnership\'s area-wide picture — this is your club\'s individual breakdown. Use it in Active Partnership conversations, NGB submissions, or FA Charter Standard reviews.');
+  }
 
   // Breakdown
   set('bWellbeing',  d.wellbeing  || '—');
