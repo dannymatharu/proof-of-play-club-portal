@@ -395,11 +395,11 @@ body {
         <div class="stat-lbl">Volunteers</div>
       </div>
       <div class="stat-box">
-        <div class="stat-num" id="statND">~0</div>
+        <div class="stat-num" id="statND">0</div>
         <div class="stat-lbl">Est. ND Players</div>
       </div>
       <div class="stat-box">
-        <div class="stat-num" id="statMH">~0</div>
+        <div class="stat-num" id="statMH">0</div>
         <div class="stat-lbl">Est. MH Need</div>
       </div>
     </div>
@@ -536,8 +536,8 @@ function renderDashboard(d) {
   // Stats
   set('statPlayers', d.total_players || '0');
   set('statVol',     d.num_vol       || '0');
-  set('statND',      d.nd_players ? '~' + d.nd_players : '—');
-  set('statMH',      d.mh_players ? '~' + d.mh_players : '—');
+  set('statND',      d.nd_players || '—');
+  set('statMH',      d.mh_players || '—');
 
   // Breakdown
   set('bWellbeing',  d.wellbeing  || '—');
