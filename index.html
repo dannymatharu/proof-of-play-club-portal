@@ -514,6 +514,24 @@ async function loadDashboard() {
     }
 
     const d = data[0];
+
+    // If there's a form_token, fetch the full report_text directly from club_submissions
+    // (bypasses any truncation that may have happened via the Apps Script relay)
+    if (d.form_token) {
+      try {
+        const rtRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/club_form_state?token=eq.${encodeURIComponent(d.form_token)}&select=report_text&limit=1`,
+          { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+        );
+        if (rtRes.ok) {
+          const rtData = await rtRes.json();
+          if (rtData && rtData[0] && rtData[0].report_text) {
+            d.report_text = rtData[0].report_text; // override with the full version
+          }
+        }
+      } catch(e) {} // silent — fall back to d.report_text from portal record
+    }
+
     renderDashboard(d);
 
   } catch (err) {
