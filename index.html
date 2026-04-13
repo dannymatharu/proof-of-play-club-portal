@@ -465,8 +465,9 @@ body {
       </div>
     </div>
 
-    <!-- Submitted date -->
+    <!-- Submitted date + edit link -->
     <div style="margin-top:32px;font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace;" id="submittedNote"></div>
+    <div style="margin-top:8px;font-size:12px;font-family:'DM Sans',sans-serif;" id="editNote" style="display:none;"></div>
 
   </main>
 
@@ -515,12 +516,13 @@ async function loadDashboard() {
 
     const d = data[0];
 
-    // If there's a form_token, fetch the full report_text directly from club_submissions
-    // (bypasses any truncation that may have happened via the Apps Script relay)
-    if (d.form_token) {
+    // Fetch the full report_text from club_submissions (bypasses Apps Script truncation)
+    // Uses form_token if set, falls back to the main token (they're the same UUID now)
+    const fetchToken = d.form_token || d.token;
+    if (fetchToken) {
       try {
         const rtRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/club_form_state?token=eq.${encodeURIComponent(d.form_token)}&select=report_text&limit=1`,
+          `${SUPABASE_URL}/rest/v1/club_submissions?token=eq.${encodeURIComponent(fetchToken)}&select=report_text&limit=1`,
           { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
         );
         if (rtRes.ok) {
@@ -603,6 +605,19 @@ function renderDashboard(d) {
       day: 'numeric', month: 'long', year: 'numeric'
     });
     set('submittedNote', 'Submitted ' + date + ' · Proof of Play by FMHA');
+  }
+
+  const editToken = d.form_token || d.token;
+  if (editToken) {
+    const calcBase = d.tool_version === 'grassroots'
+      ? 'https://dannymatharu.github.io/proof-of-play-grassroots/'
+      : 'https://dannymatharu.github.io/proof-of-play-football/';
+    const editUrl = calcBase + '?token=' + encodeURIComponent(editToken);
+    const editEl  = document.getElementById('editNote');
+    if (editEl) {
+      editEl.innerHTML = 'Need to update your figures? <a href="' + editUrl + '" style="color:var(--green-deep);font-weight:600;text-decoration:underline;">Edit your submission →</a>';
+      editEl.style.display = 'block';
+    }
   }
 
   // Show dashboard
