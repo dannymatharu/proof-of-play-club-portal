@@ -499,10 +499,8 @@ async function loadDashboard() {
   }
 
   try {
-    // Single table — club_submissions holds everything the calculator saved
-    // plus the formatted display values written by the Apps Script on email send.
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/club_submissions?token=eq.${encodeURIComponent(token)}&limit=1`,
+      `${SUPABASE_URL}/rest/v1/club_portal_tokens?token=eq.${encodeURIComponent(token)}&limit=1`,
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
     );
 
