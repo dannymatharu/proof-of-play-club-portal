@@ -487,6 +487,53 @@ function show(id)  { document.getElementById(id).style.display = ''; }
 function hide(id)  { document.getElementById(id).style.display = 'none'; }
 function set(id, v){ document.getElementById(id).textContent = v; }
 
+// ─── CURRENCY FORMATTER ─────────────────────────────────
+// Matches the calculator's sidebar format exactly:
+//   1,154,626 → £1.15M
+//   808,800   → £809K
+//   24,050    → £24K
+function fmtCurrency(n) {
+  if (n === null || n === undefined || n === '') return '—';
+  const num = Number(n);
+  if (isNaN(num)) return '—';
+  if (num >= 1000000) return '£' + (num / 1000000).toFixed(2) + 'M';
+  if (num >= 1000)    return '£' + Math.round(num / 1000) + 'K';
+  return '£' + Math.round(num).toLocaleString();
+}
+
+// ─── DATA TRANSFORM ─────────────────────────────────────
+// Reads a raw club_submissions row and returns the shape renderDashboard
+// expects. This lets us read directly from the source of truth rather than
+// relying on the apps-script-maintained club_portal_tokens mirror table.
+function transformSubmission(row) {
+  const area =
+    (row.form_state && (row.form_state.area || row.form_state.town)) ||
+    row.region ||
+    row.county ||
+    '';
+
+  return {
+    club_name:     row.club_name,
+    area:          area,
+    total_value:   fmtCurrency(row.total_value),
+    total_players: row.total_players,
+    num_vol:       row.num_volunteers,
+    nd_players:    row.nd_players,
+    mh_players:    row.mh_players,
+    tool_version:  row.tool_version,
+    wellbeing:     fmtCurrency(row.wellbeing_value),
+    nhs:           fmtCurrency(row.nhs_value),
+    volunteers:    fmtCurrency(row.vol_value),
+    community:     fmtCurrency(row.community_value),
+    sroi:          row.sroi ? Number(row.sroi).toFixed(2) : null,
+    imd_decile:    row.imd_decile,
+    charter:       row.charter_level,
+    report_text:   row.report_text,
+    created_at:    row.created_at,
+    token:         row.token
+  };
+}
+
 async function loadDashboard() {
   // Read token from URL
   const params = new URLSearchParams(window.location.search);
@@ -499,22 +546,24 @@ async function loadDashboard() {
   }
 
   try {
+    // Read directly from club_submissions (source of truth). No dependency on
+    // the apps-script → club_portal_tokens bridge, which was silently failing.
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/club_portal_tokens?token=eq.${encodeURIComponent(token)}&limit=1`,
+      `${SUPABASE_URL}/rest/v1/club_submissions?token=eq.${encodeURIComponent(token)}&limit=1`,
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
     );
 
     if (!res.ok) throw new Error('Fetch failed: ' + res.status);
 
-    const data = await res.json();
+    const rows = await res.json();
 
-    if (!data || data.length === 0) {
+    if (!rows || rows.length === 0) {
       hide('stateLoading');
       show('stateError');
       return;
     }
 
-    const d = data[0];
+    const d = transformSubmission(rows[0]);
 
     renderDashboard(d);
 
