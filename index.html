@@ -542,6 +542,31 @@ function fmtCurrency(n) {
   return '£' + Math.round(num).toLocaleString();
 }
 
+// ─── CHARTER / ACCREDITATION LABEL ──────────────────────
+// club_submissions stores the raw enum code (e.g. "star2"). The dashboard
+// needs the human-readable label so a non-FA reader (grant assessor, sponsor,
+// committee member) actually knows what they're looking at.
+//
+// FA rebranded "Charter Standard" to "England Football Accreditation" in 2021,
+// so older submissions may carry charter / development / community codes
+// (legacy scheme). Both are respected here — we don't force-migrate the label.
+const FOOTBALL_CHARTER_LABELS = {
+  star1:       'England Football Accredited — 1 Star',
+  star2:       'England Football Accredited — 2 Star',
+  star3:       'England Football Accredited — 3 Star',
+  charter:     'FA Charter Standard',
+  development: 'FA Charter Standard — Development Club',
+  community:   'FA Charter Standard — Community Club'
+};
+
+function charterDisplayLabel(code, tool) {
+  if (!code || code === 'none') return '';
+  if (tool === 'football') return FOOTBALL_CHARTER_LABELS[code] || '';
+  // Grassroots tool doesn't currently surface an accreditation selector —
+  // hide the pill unless/until sport-specific accreditation mappings are added.
+  return '';
+}
+
 // ─── DATA TRANSFORM ─────────────────────────────────────
 // Reads a raw club_submissions row and returns the shape renderDashboard
 // expects. This lets us read directly from the source of truth rather than
@@ -665,8 +690,9 @@ function renderDashboard(d) {
     show('imdSection');
   }
 
-  if (d.charter) {
-    set('bCharter', d.charter);
+  const charterLabel = charterDisplayLabel(d.charter, d.tool_version);
+  if (charterLabel) {
+    set('bCharter', charterLabel);
     show('charterSection');
   }
 
