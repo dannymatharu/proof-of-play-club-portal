@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proof of Play — Club Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green-deep:  #0B3D20;
+  --green-mid:   #1a5c33;
+  --green-light: #6EE89A;
+  --cream:       #F4F1EB;
+  --cream-mid:   #EAE6DC;
+  --text:        #1A1A18;
+  --text-mid:    #4A4A44;
+  --text-muted:  #7A7A72;
+  --white:       #ffffff;
+  --r:           12px;
+  --r-sm:        8px;
+  --shadow:      0 4px 24px rgba(11,61,32,0.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── LOADING / ERROR STATES ─────────────────────────── */
+.state-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.state-card {
+  background: var(--white);
+  border-radius: var(--r);
+  padding: 48px 40px;
+  max-width: 460px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.state-icon { font-size: 40px; margin-bottom: 16px; }
+.state-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--green-deep);
+  margin-bottom: 10px;
+}
+.state-sub { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+.spinner {
+  width: 44px; height: 44px;
+  border: 3px solid var(--cream-mid);
+  border-top-color: var(--green-deep);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── DASHBOARD ──────────────────────────────────────── */
+.dashboard { display: none; }
+
+/* Header */
+.dash-header {
+  background: var(--green-deep);
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.dash-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+.dash-brand em { color: var(--green-light); font-style: normal; }
+.dash-club-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.dash-bookmark-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.8);
+  padding: 7px 16px;
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: background 0.2s;
+}
+.dash-bookmark-btn:hover { background: rgba(255,255,255,0.18); }
+
+/* Hero banner */
+.hero-banner {
+  background: var(--green-deep);
+  padding: 40px 40px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.hero-banner::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; left: 0; right: 0;
+  height: 60px;
+  background: var(--cream);
+  border-radius: 40px 40px 0 0;
+}
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 8px;
+}
+.hero-club {
+  font-family: 'Syne', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--white);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+.hero-area { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 28px; }
+.hero-value-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 6px;
+}
+.hero-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 56px;
+  font-weight: 800;
+  color: var(--green-light);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.hero-methodology {
+  margin-top: 12px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+}
+
+/* Body */
+.dash-body {
+  padding: 40px 40px 60px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+@media (max-width: 700px) {
+  .dash-header { padding: 0 20px; }
+  .hero-banner { padding: 32px 20px 48px; }
+  .hero-value { font-size: 40px; }
+  .dash-body { padding: 28px 20px 48px; }
+  .dash-club-badge { display: none; }
+}
+
+/* Section label */
+.section-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--green-deep);
+  margin-bottom: 14px;
+  margin-top: 36px;
+}
+.section-label:first-child { margin-top: 0; }
+
+/* Cards */
+.card {
+  background: var(--white);
+  border-radius: var(--r);
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(11,61,32,0.06);
+}
+.card + .card { margin-top: 12px; }
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+@media (max-width: 700px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+.stat-box {
+  background: var(--white);
+  border-radius: var(--r);
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(11,61,32,0.06);
+  text-align: center;
+}
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--green-deep);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-lbl {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+/* Breakdown rows */
+.brow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cream-mid);
+  font-size: 14px;
+}
+.brow:last-child { border-bottom: none; padding-bottom: 0; }
+.brow:first-child { padding-top: 0; }
+.brow-label { color: var(--text-mid); }
+.brow-value {
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  color: var(--green-deep);
+  font-size: 14px;
+}
+
+/* IMD badge */
+.imd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--cream);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text-mid);
+  margin-top: 12px;
+}
+.imd-badge strong { color: var(--green-deep); font-family: 'DM Mono', monospace; }
+
+/* Charter pill */
+.charter-pill {
+  display: inline-block;
+  background: rgba(11,61,32,0.08);
+  color: var(--green-deep);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+/* Report text section */
+.report-text-box {
+  background: var(--cream);
+  border-radius: var(--r-sm);
+  padding: 20px;
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 360px;
+  overflow-y: auto;
+}
+.copy-btn {
+  background: var(--green-deep);
+  color: var(--white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  margin-top: 12px;
+  transition: background 0.2s;
+}
+.copy-btn:hover { background: var(--green-mid); }
+.copy-btn.copied { background: #2a7a4a; }
+
+/* How to use this */
+.use-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 700px) { .use-grid { grid-template-columns: 1fr; } }
+.use-box {
+  background: var(--cream);
+  border-radius: var(--r-sm);
+  padding: 18px;
+}
+.use-box h4 {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--green-deep);
+  margin-bottom: 6px;
+}
+.use-box p { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+/* Footer */
+.dash-footer {
+  background: var(--green-deep);
+  padding: 24px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.footer-text { font-size: 12px; color: rgba(255,255,255,0.4); }
+.footer-text strong { color: rgba(255,255,255,0.65); }
+@media (max-width: 700px) { .dash-footer { padding: 20px; flex-direction: column; text-align: center; } }
+</style>
+</head>
+<body>
+
+<!-- LOADING STATE -->
+<div class="state-wrap" id="stateLoading">
+  <div class="state-card">
+    <div class="spinner"></div>
+    <div class="state-title">Loading your dashboard</div>
+    <p class="state-sub">Fetching your social value results…</p>
+  </div>
+</div>
+
+<!-- ERROR STATE -->
+<div class="state-wrap" id="stateError" style="display:none;">
+  <div class="state-card">
+    <div class="state-icon">🔍</div>
+    <div class="state-title">Dashboard not found</div>
+    <p class="state-sub">This link may be invalid or the submission couldn't be located. If you completed Proof of Play recently, check the email we sent you for the correct link.<br><br>For help, contact <a href="mailto:danny@withinu.net" style="color:#0B3D20;">danny@withinu.net</a></p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+
+  <!-- Header -->
+  <header class="dash-header">
+    <div class="dash-brand">Proof of <em>Play</em></div>
+    <div class="dash-club-badge" id="headerClub"></div>
+    <button class="dash-bookmark-btn" onclick="alert('Press Ctrl+D (or Cmd+D on Mac) to bookmark this page — the link is unique to your club.')">Bookmark this page</button>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero-banner">
+    <div class="hero-eyebrow">Proof of Play · FMHA Football Edition</div>
+    <div class="hero-club" id="heroClub">Club Name</div>
+    <div class="hero-area" id="heroArea">Area</div>
+    <div class="hero-value-label">Estimated Annual Social Value</div>
+    <div class="hero-value" id="heroValue">£0</div>
+    <div class="hero-methodology">HM Treasury WELLBY methodology · Sport England Social Value Model Year 2 (November 2025)</div>
+  </div>
+
+  <!-- Body -->
+  <main class="dash-body">
+
+    <!-- Small edit link — top placement for users returning to update numbers -->
+    <div id="editTop" style="display:none; margin:-8px 0 20px; text-align:right; font-size:13px; font-family:'DM Sans',sans-serif;">
+      <a id="editTopLink" href="#" style="color:var(--green-deep); font-weight:600; text-decoration:none; border-bottom:1px dotted var(--green-deep);">✏️ Edit your submission →</a>
+    </div>
+
+    <!-- Club profile stats -->
+    <div class="section-label">Club Profile</div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-num" id="statPlayers">0</div>
+        <div class="stat-lbl">Participants</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="statVol">0</div>
+        <div class="stat-lbl">Volunteers</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="statND">0</div>
+        <div class="stat-lbl">Est. ND Participants</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="statMH">0</div>
+        <div class="stat-lbl">Est. MH Need</div>
+      </div>
+    </div>
+
+    <!-- Value breakdown -->
+    <div class="section-label">Social Value Breakdown</div>
+    <div class="card">
+      <div class="brow">
+        <span class="brow-label">Participant Wellbeing Value</span>
+        <span class="brow-value" id="bWellbeing">—</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">Health &amp; Productivity Savings</span>
+        <span class="brow-value" id="bNHS">—</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">Volunteer Contribution</span>
+        <span class="brow-value" id="bVolunteers">—</span>
+      </div>
+      <div class="brow">
+        <span class="brow-label">Community Programme Value</span>
+        <span class="brow-value" id="bCommunity">—</span>
+      </div>
+      <div class="brow" id="sroiRow" style="display:none;">
+        <span class="brow-label">Social Value Returned per £1 Spent</span>
+        <span class="brow-value" id="bSROI">—</span>
+      </div>
+      <div id="imdSection" style="display:none;">
+        <div class="imd-badge">
+          📍 Area Deprivation (IMD): Decile <strong id="bIMD">—</strong>
+          <span id="imdNote" style="font-size:11px;"></span>
+        </div>
+      </div>
+      <div id="charterSection" style="display:none;">
+        <div class="charter-pill" id="bCharter"></div>
+      </div>
+    </div>
+
+    <!-- How to use -->
+    <div class="section-label">Using your report</div>
+    <div class="use-grid">
+      <div class="use-box">
+        <h4>Grant applications</h4>
+        <p>These figures meet the evidence requirements for Sport England Movement Fund, Football Foundation grants, and local authority funding bids. Cite as "evidence-based estimates using HM Treasury WELLBY methodology."</p>
+      </div>
+      <div class="use-box">
+        <h4>AGM &amp; committee</h4>
+        <p>Share this dashboard link with your committee and present the total social value figure at your AGM. It contextualises the club's contribution beyond just football results.</p>
+      </div>
+      <div class="use-box" id="useBoxNGB">
+        <h4 id="useBoxNGBTitle">NGB &amp; partner submissions</h4>
+        <p id="useBoxNGBText">Your figures feed into the wider picture — this is your club's individual breakdown. Use it in any NGB, County FA, Active Partnership or funder conversations.</p>
+      </div>
+    </div>
+
+    <!-- Full Report -->
+    <div id="reportSection" style="display:none;">
+      <div class="section-label">Full report text</div>
+      <div class="card">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">The long-form technical report. Paste into grant applications, Active Partnership submissions, or your club website.</p>
+        <div class="report-text-box" id="reportText"></div>
+        <button class="copy-btn" id="copyBtnReport" onclick="copyText('reportText','copyBtnReport','Copy full report')">Copy full report</button>
+      </div>
+    </div>
+
+    <!-- Press Release -->
+    <div id="pressSection" style="display:none;">
+      <div class="section-label">Press release</div>
+      <div class="card">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">Ready-to-send press release for your local paper, County FA / Active Partnership newsletter, or club website news page.</p>
+        <div class="report-text-box" id="pressText"></div>
+        <button class="copy-btn" id="copyBtnPress" onclick="copyText('pressText','copyBtnPress','Copy press release')">Copy press release</button>
+      </div>
+    </div>
+
+    <!-- Social Posts -->
+    <div id="socialSection" style="display:none;">
+      <div class="section-label">Social posts</div>
+      <div class="card">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">LinkedIn, X, Facebook and Instagram posts pre-written with your figures. Copy the block, pick the platform you need, paste and post.</p>
+        <div class="report-text-box" id="socialText"></div>
+        <button class="copy-btn" id="copyBtnSocial" onclick="copyText('socialText','copyBtnSocial','Copy social posts')">Copy social posts</button>
+      </div>
+    </div>
+
+    <!-- Funding Guide -->
+    <div id="fundingSection" style="display:none;">
+      <div class="section-label">Funding guide</div>
+      <div class="card">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;">Ready-to-use paragraphs for each funder your evidence supports — Football Foundation, Sport England Movement Fund, National Lottery Awards for All, Peter Harrison Foundation and more.</p>
+        <div class="report-text-box" id="fundingText"></div>
+        <button class="copy-btn" id="copyBtnFunding" onclick="copyText('fundingText','copyBtnFunding','Copy funding guide')">Copy funding guide</button>
+      </div>
+    </div>
+
+    <!-- EDIT CTA — prominent card so returning users can update their figures -->
+    <div id="editCtaCard" style="display:none; margin-top:40px; background:var(--cream-dark, #F4F1EB); border:1px solid var(--border, #DDD6C7); border-radius:12px; padding:28px 32px;">
+      <div style="font-family:'Cormorant Garamond',serif; font-size:22px; color:var(--green, #0B3D20); margin-bottom:8px; font-weight:600;">Numbers change. Keep your figures current.</div>
+      <p style="font-size:14px; color:var(--text-mid, #3A3A38); margin:0 0 18px; line-height:1.55; max-width:620px;">Your figures end up in grant applications, AGM packs and sponsor conversations — so they're only useful if they're up to date. Add new volunteers, update player numbers, refresh your postcode lookup any time.</p>
+      <a id="editCtaLink" href="#" style="display:inline-block; background:var(--green, #0B3D20); color:#fff; padding:14px 26px; border-radius:8px; font-size:15px; font-weight:600; text-decoration:none; letter-spacing:-0.01em;">Edit your submission →</a>
+    </div>
+
+    <!-- Submitted date -->
+    <div style="margin-top:32px;font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace;" id="submittedNote"></div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="dash-footer">
+    <div class="footer-text">Proof of Play is powered by <strong>FMHA</strong> · T: 03330 500 399 · E: danny@withinu.net</div>
+    <div class="footer-text">Figures are evidence-based estimates using HM Treasury WELLBY methodology and Sport England's Social Value Model Year 2 (November 2025). Not a formal audit.</div>
+  </footer>
+
+</div><!-- /dashboard -->
+
+<script>
+const SUPABASE_URL = 'https://puafunzdaronevidsdve.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1YWZ1bnpkYXJvbmV2aWRzZHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2OTI4ODIsImV4cCI6MjA5MDI2ODg4Mn0.7rmsRtzqrp-wTNWANDedjHF8Mgwxtbfzwr-eEYoM30w';
+
+function show(id)  { document.getElementById(id).style.display = ''; }
+function hide(id)  { document.getElementById(id).style.display = 'none'; }
+function set(id, v){ document.getElementById(id).textContent = v; }
+
+// ─── CURRENCY FORMATTER ─────────────────────────────────
+// Matches the calculator's sidebar format exactly:
+//   1,154,626 → £1.15M
+//   808,800   → £809K
+//   24,050    → £24K
+function fmtCurrency(n) {
+  if (n === null || n === undefined || n === '') return '—';
+  const num = Number(n);
+  if (isNaN(num)) return '—';
+  if (num >= 1000000) return '£' + (num / 1000000).toFixed(2) + 'M';
+  if (num >= 1000)    return '£' + Math.round(num / 1000) + 'K';
+  return '£' + Math.round(num).toLocaleString();
+}
+
+// ─── CHARTER / ACCREDITATION LABEL ──────────────────────
+// club_submissions stores the raw enum code (e.g. "star2"). The dashboard
+// needs the human-readable label so a non-FA reader (grant assessor, sponsor,
+// committee member) actually knows what they're looking at.
+//
+// FA rebranded "Charter Standard" to "England Football Accreditation" in 2021,
+// so older submissions may carry charter / development / community codes
+// (legacy scheme). Both are respected here — we don't force-migrate the label.
+const FOOTBALL_CHARTER_LABELS = {
+  star1:       'England Football Accredited — 1 Star',
+  star2:       'England Football Accredited — 2 Star',
+  star3:       'England Football Accredited — 3 Star',
+  charter:     'FA Charter Standard',
+  development: 'FA Charter Standard — Development Club',
+  community:   'FA Charter Standard — Community Club'
+};
+
+function charterDisplayLabel(code, tool) {
+  if (!code || code === 'none') return '';
+  if (tool === 'football') return FOOTBALL_CHARTER_LABELS[code] || '';
+  // Grassroots tool doesn't currently surface an accreditation selector —
+  // hide the pill unless/until sport-specific accreditation mappings are added.
+  return '';
+}
+
+// ─── DATA TRANSFORM ─────────────────────────────────────
+// Reads a raw club_submissions row and returns the shape renderDashboard
+// expects. This lets us read directly from the source of truth rather than
+// relying on the apps-script-maintained club_portal_tokens mirror table.
+function transformSubmission(row) {
+  const area =
+    (row.form_state && (row.form_state.area || row.form_state.town)) ||
+    row.region ||
+    row.county ||
+    '';
+
+  return {
+    club_name:     row.club_name,
+    area:          area,
+    total_value:   fmtCurrency(row.total_value),
+    total_players: row.total_players,
+    num_vol:       row.num_volunteers,
+    nd_players:    row.nd_players,
+    mh_players:    row.mh_players,
+    tool_version:  row.tool_version,
+    wellbeing:     fmtCurrency(row.wellbeing_value),
+    nhs:           fmtCurrency(row.nhs_value),
+    volunteers:    fmtCurrency(row.vol_value),
+    community:     fmtCurrency(row.community_value),
+    sroi:          row.sroi ? Number(row.sroi).toFixed(2) : null,
+    imd_decile:    row.imd_decile,
+    charter:       row.charter_level,
+    report_text:   row.report_text,
+    press_text:    row.press_text,
+    social_text:   row.social_text,
+    funding_text:  row.funding_text,
+    created_at:    row.created_at,
+    token:         row.token
+  };
+}
+
+async function loadDashboard() {
+  // Read token from URL
+  const params = new URLSearchParams(window.location.search);
+  const token  = params.get('token');
+
+  if (!token) {
+    hide('stateLoading');
+    show('stateError');
+    return;
+  }
+
+  try {
+    // Read directly from club_submissions (source of truth). No dependency on
+    // the apps-script → club_portal_tokens bridge, which was silently failing.
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/club_submissions?token=eq.${encodeURIComponent(token)}&limit=1`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+
+    if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+
+    const rows = await res.json();
+
+    if (!rows || rows.length === 0) {
+      hide('stateLoading');
+      show('stateError');
+      return;
+    }
+
+    const d = transformSubmission(rows[0]);
+
+    renderDashboard(d);
+
+  } catch (err) {
+    console.error('Dashboard load error:', err);
+    hide('stateLoading');
+    show('stateError');
+  }
+}
+
+function renderDashboard(d) {
+  // Header
+  set('headerClub', d.club_name || '');
+  document.title = `Proof of Play — ${d.club_name || 'Club Dashboard'}`;
+
+  // Hero
+  set('heroClub',  d.club_name  || 'Your Club');
+  set('heroArea',  d.area       || '');
+  set('heroValue', d.total_value || '—');
+
+  // Stats
+  set('statPlayers', d.total_players || '0');
+  set('statVol',     d.num_vol       || '0');
+  set('statND',      d.nd_players || '—');
+  set('statMH',      d.mh_players || '—');
+
+  // "Using your report" third box — context-aware by tool version
+  if (d.tool_version === 'football') {
+    set('useBoxNGBTitle', 'County FA &amp; NGB submissions');
+    set('useBoxNGBText', 'Your figures are already in the County FA aggregate — this is your individual breakdown. Use it in any County FA development submissions or FA Charter Standard reviews.');
+  } else {
+    set('useBoxNGBTitle', 'Active Partnership &amp; NGB submissions');
+    set('useBoxNGBText', 'Your figures feed into your Active Partnership\'s area-wide picture — this is your club\'s individual breakdown. Use it in Active Partnership conversations, NGB submissions, or FA Charter Standard reviews.');
+  }
+
+  // Breakdown
+  set('bWellbeing',  d.wellbeing  || '—');
+  set('bNHS',        d.nhs        || '—');
+  set('bVolunteers', d.volunteers || '—');
+  set('bCommunity',  d.community  || '—');
+
+  if (d.sroi) {
+    set('bSROI', '£' + d.sroi + ' per £1 spent');
+    show('sroiRow');
+  }
+
+  if (d.imd_decile) {
+    set('bIMD', d.imd_decile);
+    const note = parseInt(d.imd_decile) <= 2
+      ? ' · Peter Harrison Foundation eligible'
+      : parseInt(d.imd_decile) <= 4
+        ? ' · Priority area'
+        : '';
+    document.getElementById('imdNote').textContent = note;
+    show('imdSection');
+  }
+
+  const charterLabel = charterDisplayLabel(d.charter, d.tool_version);
+  if (charterLabel) {
+    set('bCharter', charterLabel);
+    show('charterSection');
+  }
+
+  // Render each content section if the calculator persisted text for it.
+  // Older submissions (pre press_text/social_text/funding_text columns) will
+  // only have report_text populated; the other three sections stay hidden.
+  const sections = [
+    { key: 'report_text',  textId: 'reportText',  sectionId: 'reportSection'  },
+    { key: 'press_text',   textId: 'pressText',   sectionId: 'pressSection'   },
+    { key: 'social_text',  textId: 'socialText',  sectionId: 'socialSection'  },
+    { key: 'funding_text', textId: 'fundingText', sectionId: 'fundingSection' }
+  ];
+  sections.forEach(s => {
+    const val = d[s.key];
+    if (val && String(val).trim()) {
+      document.getElementById(s.textId).textContent = val;
+      show(s.sectionId);
+    }
+  });
+
+  if (d.created_at) {
+    const date = new Date(d.created_at).toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+    set('submittedNote', 'Submitted ' + date + ' · Proof of Play by FMHA');
+  }
+
+  // The URL token is also the edit token — same UUID, same row, one table.
+  const calcBase = d.tool_version === 'grassroots'
+    ? 'https://dannymatharu.github.io/proof-of-play-grassroots/'
+    : 'https://dannymatharu.github.io/proof-of-play-football/';
+  const editUrl = calcBase + '?token=' + encodeURIComponent(d.token);
+
+  // Hydrate the top edit link (small, subtle — for returning users who just
+  // want to update numbers and leave).
+  const topLink = document.getElementById('editTopLink');
+  const topWrap = document.getElementById('editTop');
+  if (topLink && topWrap) {
+    topLink.href = editUrl;
+    topWrap.style.display = 'block';
+  }
+
+  // Hydrate the bottom CTA card (prominent — final call to action).
+  const ctaLink = document.getElementById('editCtaLink');
+  const ctaCard = document.getElementById('editCtaCard');
+  if (ctaLink && ctaCard) {
+    ctaLink.href = editUrl;
+    ctaCard.style.display = 'block';
+  }
+
+  // Show dashboard
+  hide('stateLoading');
+  document.getElementById('dashboard').style.display = 'block';
+}
+
+// Generic copy handler — works for any of the four content sections.
+function copyText(textElId, btnId, restoreLabel) {
+  const text = document.getElementById(textElId).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = restoreLabel;
+      btn.classList.remove('copied');
+    }, 2500);
+  });
+}
+
+// Kick off on load
+loadDashboard();
+</script>
+</body>
+</html>
