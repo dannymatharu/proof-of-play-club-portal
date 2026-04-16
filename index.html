@@ -399,13 +399,15 @@ body {
         <div class="stat-num" id="statVol">0</div>
         <div class="stat-lbl">Volunteers</div>
       </div>
-      <div class="stat-box">
+      <div class="stat-box" title="Based on national prevalence data (NHS Digital, British Dyslexia Association). Statistical estimate — not diagnosed individuals.">
         <div class="stat-num" id="statND">0</div>
         <div class="stat-lbl">Est. ND Participants</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.4;">Based on 14% national prevalence</div>
       </div>
-      <div class="stat-box">
+      <div class="stat-box" title="Based on NHS Digital MHCYP 2023 prevalence data (1 in 5). Statistical estimate — not diagnosed individuals.">
         <div class="stat-num" id="statMH">0</div>
         <div class="stat-lbl">Est. MH Need</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.4;">Based on 1-in-5 prevalence (NHS Digital)</div>
       </div>
     </div>
 
@@ -417,7 +419,7 @@ body {
         <span class="brow-value" id="bWellbeing">—</span>
       </div>
       <div class="brow">
-        <span class="brow-label">NHS &amp; Healthcare Savings</span>
+        <span class="brow-label">Health &amp; Productivity Savings</span>
         <span class="brow-value" id="bNHS">—</span>
       </div>
       <div class="brow">
@@ -429,7 +431,7 @@ body {
         <span class="brow-value" id="bCommunity">—</span>
       </div>
       <div class="brow" id="sroiRow" style="display:none;">
-        <span class="brow-label">Social Return on Investment</span>
+        <span class="brow-label">Social Value to Cost Ratio</span>
         <span class="brow-value" id="bSROI">—</span>
       </div>
       <div id="imdSection" style="display:none;">
@@ -675,7 +677,7 @@ function renderDashboard(d) {
   set('bCommunity',  d.community  || '—');
 
   if (d.sroi) {
-    set('bSROI', '£' + d.sroi + ' per £1 spent');
+    set('bSROI', '£' + d.sroi + ' per £1 invested');
     show('sroiRow');
   }
 
