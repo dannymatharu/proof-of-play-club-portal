@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Share Your Impact · Proof of Play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #111210;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  gap: 28px;
+}
+
+/* ── STATES ─────────────────────────────────────── */
+.state {
+  color: rgba(255,255,255,0.5);
+  font-size: 15px;
+  text-align: center;
+  line-height: 1.6;
+}
+.state a { color: #6EE89A; }
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: #6EE89A;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── CARD ────────────────────────────────────────── */
+/* 540px displayed, captured at 2× = 1080×1080 */
+#card {
+  width: 540px;
+  height: 540px;
+  background: #0B3D20;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 56px 52px 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle radial glow — same as hero on the dashboard */
+#card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 40% 25%, rgba(110,232,154,0.08) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+/* Top: club identity + numbers */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  gap: 0;
+}
+
+.card-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 14px;
+}
+
+.card-club {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  color: #ffffff;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin-bottom: 36px;
+}
+
+.card-value-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(255,255,255,0.38);
+  margin-bottom: 8px;
+}
+
+.card-value {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 88px;
+  color: #6EE89A;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  margin-bottom: 22px;
+}
+
+.card-stats {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.06em;
+}
+
+/* Bottom: Proof of Play logo text recreation */
+.pop-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  gap: 3px;
+}
+
+.logo-proof,
+.logo-play {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: 0.18em;
+}
+
+.logo-of {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 9px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.22em;
+}
+
+/* ── CONTROLS (outside the card, not captured) ───── */
+.controls {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.dl-btn {
+  background: #6EE89A;
+  color: #0B3D20;
+  border: none;
+  padding: 14px 36px;
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: -0.01em;
+  transition: background 0.15s, transform 0.1s;
+}
+.dl-btn:hover  { background: #5dd485; }
+.dl-btn:active { transform: scale(0.98); }
+.dl-btn:disabled { opacity: 0.6; cursor: default; }
+
+.dl-tip {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.06em;
+}
+
+.dash-link {
+  font-size: 13px;
+  color: rgba(255,255,255,0.3);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  padding-bottom: 1px;
+  margin-top: 4px;
+  transition: color 0.15s;
+}
+.dash-link:hover { color: rgba(255,255,255,0.6); }
+
+/* ── RESPONSIVE PREVIEW ──────────────────────────── */
+@media (max-width: 580px) {
+  #card {
+    width: 320px;
+    height: 320px;
+    padding: 36px 32px 32px;
+  }
+  .card-club  { font-size: 20px; margin-bottom: 24px; }
+  .card-value { font-size: 56px; margin-bottom: 16px; }
+  .card-stats { font-size: 10px; }
+  .logo-proof,
+  .logo-play  { font-size: 11px; }
+  .logo-of    { font-size: 7px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="stateLoading" class="state">
+  <div class="spinner"></div>
+  Building your impact card…
+</div>
+
+<!-- Error -->
+<div id="stateError" class="state" style="display:none;">
+  Card not found.<br>
+  <small style="font-size:12px;">Check your link or contact <a href="mailto:danny@withinu.net">danny@withinu.net</a></small>
+</div>
+
+<!-- ── THE CARD ── -->
+<div id="card">
+  <div class="card-content">
+    <div class="card-eyebrow" id="cardEdition">Proof of Play · 2025</div>
+    <div class="card-club"        id="cardClub">Club Name</div>
+    <div class="card-value-label">Annual Social Value</div>
+    <div class="card-value"       id="cardValue">£0</div>
+    <div class="card-stats"       id="cardStats">0 participants · 0 volunteers</div>
+  </div>
+  <div class="pop-logo">
+    <div class="logo-proof">PROOF</div>
+    <div class="logo-of">— OF —</div>
+    <div class="logo-play">PLAY</div>
+  </div>
+</div>
+
+<!-- Controls -->
+<div class="controls" id="controls">
+  <button class="dl-btn" id="dlBtn" onclick="downloadCard()">Download image</button>
+  <div class="dl-tip">1080 × 1080 · ready for Instagram, Facebook &amp; LinkedIn</div>
+  <a class="dash-link" id="dashLink" href="#">← Back to your full dashboard</a>
+</div>
+
+<!-- html2canvas from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+const SUPABASE_URL = 'https://puafunzdaronevidsdve.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1YWZ1bnpkYXJvbmV2aWRzZHZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2OTI4ODIsImV4cCI6MjA5MDI2ODg4Mn0.7rmsRtzqrp-wTNWANDedjHF8Mgwxtbfzwr-eEYoM30w';
+
+function show(id) { const el = document.getElementById(id); if (el) el.style.display = 'flex'; }
+function hide(id) { const el = document.getElementById(id); if (el) el.style.display = 'none'; }
+function set(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+
+function fmtCurrency(n) {
+  if (n === null || n === undefined || n === '') return '—';
+  const num = Number(n);
+  if (isNaN(num)) return '—';
+  if (num >= 1000000) return '£' + (num / 1000000).toFixed(2) + 'M';
+  if (num >= 1000)    return '£' + Math.round(num / 1000) + 'K';
+  return '£' + Math.round(num).toLocaleString();
+}
+
+// Sanitise club name for use in a filename
+function safeFilename(name) {
+  return (name || 'club')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+async function load() {
+  const params = new URLSearchParams(window.location.search);
+  const token  = params.get('token');
+
+  if (!token) {
+    hide('stateLoading');
+    show('stateError');
+    return;
+  }
+
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/club_submissions?token=eq.${encodeURIComponent(token)}&limit=1`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+    );
+
+    if (!res.ok) throw new Error('Fetch failed: ' + res.status);
+
+    const rows = await res.json();
+    if (!rows || rows.length === 0) {
+      hide('stateLoading');
+      show('stateError');
+      return;
+    }
+
+    const r = rows[0];
+
+    // Populate card
+    set('cardClub',  r.club_name || 'Your Club');
+    set('cardValue', fmtCurrency(r.total_value));
+    set('cardStats', `${r.total_players || 0} participants · ${r.num_volunteers || 0} volunteers`);
+
+    // Edition label — year from submission date
+    const year = r.created_at ? new Date(r.created_at).getFullYear() : new Date().getFullYear();
+    const edition = r.tool_version === 'scottish_football' ? 'Scottish Football Edition'
+                  : r.tool_version === 'grassroots'        ? 'All Sport Edition'
+                  : 'Football Edition';
+    set('cardEdition', `Proof of Play · ${edition} · ${year}`);
+
+    // Dashboard back-link
+    const portalUrl = `https://dannymatharu.github.io/proof-of-play-club-portal/?token=${encodeURIComponent(token)}`;
+    const dashEl = document.getElementById('dashLink');
+    if (dashEl) dashEl.href = portalUrl;
+
+    // Store slug for filename
+    document.getElementById('dlBtn').dataset.clubSlug = safeFilename(r.club_name);
+
+    hide('stateLoading');
+    show('card');
+    show('controls');
+
+  } catch (err) {
+    console.error('Share card load error:', err);
+    hide('stateLoading');
+    show('stateError');
+  }
+}
+
+async function downloadCard() {
+  const btn  = document.getElementById('dlBtn');
+  const slug = btn.dataset.clubSlug || 'club';
+
+  btn.textContent = 'Generating…';
+  btn.disabled = true;
+
+  try {
+    const card = document.getElementById('card');
+    const canvas = await html2canvas(card, {
+      scale: 2,                  // 540px × 2 = 1080px output
+      useCORS: true,
+      backgroundColor: '#0B3D20',
+      width:  540,
+      height: 540,
+      logging: false
+    });
+
+    const link = document.createElement('a');
+    link.download = `proof-of-play-${slug}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (err) {
+    console.error('Download error:', err);
+    alert('Download failed — try right-clicking the card and saving as image instead.');
+  }
+
+  btn.textContent = 'Download image';
+  btn.disabled = false;
+}
+
+// Wait for fonts before rendering so Syne loads correctly
+document.fonts.ready.then(load);
+</script>
+</body>
+</html>
