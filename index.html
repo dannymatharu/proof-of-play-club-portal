@@ -516,7 +516,7 @@ body {
 
   <!-- Footer -->
   <footer class="dash-footer">
-    <div class="footer-text">Proof of Play is powered by <strong>FMHA</strong> · T: 03330 500 399 · E: danny@withinu.net</div>
+    <div class="footer-text" id="footerPoweredBy">Proof of Play is powered by <strong>FMHA</strong> · T: 03330 500 399 · E: danny@withinu.net</div>
     <div class="footer-text" id="footerMethodology">Figures are evidence-based estimates using HM Treasury WELLBY methodology and Sport England's Social Value Model Year 2 (November 2025). Not a formal audit.</div>
   </footer>
 
@@ -731,7 +731,10 @@ function renderDashboard(d) {
     const date = new Date(d.created_at).toLocaleDateString('en-GB', {
       day: 'numeric', month: 'long', year: 'numeric'
     });
-    set('submittedNote', 'Submitted ' + date + ' · Proof of Play by FMHA');
+    // Brand attribution swaps to withinu for the all-sport (grassroots) edition;
+    // FMHA stays for football editions (default + Scottish).
+    const submitBrand = d.tool_version === 'grassroots' ? 'withinu' : 'FMHA';
+    set('submittedNote', 'Submitted ' + date + ' · Proof of Play by ' + submitBrand);
   }
 
   // The URL token is also the edit token — same UUID, same row, one table.
@@ -771,6 +774,17 @@ function renderDashboard(d) {
     if (grantText) grantText.textContent = 'These figures meet evidence requirements for sportscotland, Scottish Football Facilities Fund, Awards for All Scotland, and local authority funding bids. Cite as "evidence-based estimates using HM Treasury WELLBY methodology."';
     const fundDesc = document.getElementById('fundingGuideDesc');
     if (fundDesc) fundDesc.textContent = 'Ready-to-use paragraphs for each funder your evidence supports — sportscotland, Scottish Football Facilities Fund, Scottish Football Partnership Trust, Awards for All Scotland and more.';
+  }
+
+  // Adapt branding for all-sport (grassroots) clubs — swaps the FMHA football
+  // brand off the page entirely and replaces it with withinu, the cross-sport
+  // brand. Methodology text is unchanged because the all-sport calculator uses
+  // the same Sport England Year 2 model as football.
+  if (d.tool_version === 'grassroots') {
+    const heroEd = document.getElementById('heroEdition');
+    if (heroEd) heroEd.textContent = 'Proof of Play · withinu · All Sport Edition';
+    const footPower = document.getElementById('footerPoweredBy');
+    if (footPower) footPower.innerHTML = 'Proof of Play is powered by <strong>withinu</strong> · T: 03330 500 399 · E: danny@withinu.net';
   }
 
   // Show dashboard
