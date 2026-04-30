@@ -325,6 +325,53 @@ body {
 }
 .use-box p { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
 
+/* Funding Bench CTA */
+.fb-cta {
+  background: linear-gradient(135deg, #1a3d2b, #0f2d27);
+  border-radius: var(--r);
+  padding: 28px 32px;
+  display: none;
+}
+.fb-cta-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--green-light);
+  margin-bottom: 8px;
+}
+.fb-cta-headline {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.25;
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+.fb-cta-body {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.6;
+  margin-bottom: 20px;
+  max-width: 520px;
+}
+.fb-cta-btn {
+  display: inline-block;
+  background: #ffffff;
+  color: #1a3d2b;
+  padding: 12px 24px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: -0.01em;
+  transition: opacity 0.15s;
+}
+.fb-cta-btn:hover { opacity: 0.9; }
+
 /* Footer */
 .dash-footer {
   background: var(--green-deep);
@@ -462,6 +509,15 @@ body {
       </div>
     </div>
 
+    <!-- Funding Bench CTA -->
+    <div class="section-label" id="fundingBenchLabel" style="display:none;">Find funding</div>
+    <div class="fb-cta" id="fundingBenchCta">
+      <div class="fb-cta-eyebrow">Grants Matched To Your Club</div>
+      <div class="fb-cta-headline">You've proved the impact. Now find the money.</div>
+      <p class="fb-cta-body">The Funding Bench has matched live grants to your club profile. Your data loads automatically — no re-entry needed.</p>
+      <a id="fundingBenchLink" href="#" class="fb-cta-btn">See Your Matched Grants →</a>
+    </div>
+
     <!-- Full Report -->
     <div id="reportSection" style="display:none;">
       <div class="section-label">Full report text</div>
@@ -499,6 +555,18 @@ body {
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;" id="fundingGuideDesc">Ready-to-use paragraphs for each funder your evidence supports — Football Foundation, Sport England Movement Fund, National Lottery Awards for All, Peter Harrison Foundation and more.</p>
         <div class="report-text-box" id="fundingText"></div>
         <button class="copy-btn" id="copyBtnFunding" onclick="copyText('fundingText','copyBtnFunding','Copy funding guide')">Copy funding guide</button>
+      </div>
+    </div>
+
+    <!-- Share card CTA -->
+    <div id="shareCardSection" style="display:none; margin-top:40px;">
+      <div class="section-label">Share your impact</div>
+      <div class="card" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px;">
+        <div>
+          <div style="font-family:'Syne',sans-serif; font-weight:700; font-size:16px; color:var(--green-deep); margin-bottom:6px;">Download your impact card</div>
+          <p style="font-size:13px; color:var(--text-muted); line-height:1.6; max-width:480px;">A 1080×1080 image with your social value figure, pre-filled and ready to post on Instagram, Facebook or LinkedIn. One tap — no editing required.</p>
+        </div>
+        <a id="shareCardLink" href="#" target="_blank" style="display:inline-block; background:var(--green-deep); color:#fff; padding:12px 24px; border-radius:var(--r-sm); font-size:14px; font-weight:600; text-decoration:none; white-space:nowrap; flex-shrink:0; letter-spacing:-0.01em;">Share your impact →</a>
       </div>
     </div>
 
@@ -760,6 +828,24 @@ function renderDashboard(d) {
   if (ctaLink && ctaCard) {
     ctaLink.href = editUrl;
     ctaCard.style.display = 'block';
+  }
+
+  // Funding Bench CTA — token handoff skips their onboarding and lands straight on matched grants
+  const fbLink  = document.getElementById('fundingBenchLink');
+  const fbCta   = document.getElementById('fundingBenchCta');
+  const fbLabel = document.getElementById('fundingBenchLabel');
+  if (fbLink && fbCta && d.token) {
+    fbLink.href = 'https://thefundingbench.co.uk?token=' + encodeURIComponent(d.token);
+    fbCta.style.display  = 'block';
+    fbLabel.style.display = 'block';
+  }
+
+  // Hydrate the share card CTA.
+  const shareLink = document.getElementById('shareCardLink');
+  const shareSection = document.getElementById('shareCardSection');
+  if (shareLink && shareSection) {
+    shareLink.href = 'https://dannymatharu.github.io/proof-of-play-club-portal/proof-of-play-share-card.html?token=' + encodeURIComponent(d.token);
+    shareSection.style.display = 'block';
   }
 
   // Adapt branding for Scottish clubs
