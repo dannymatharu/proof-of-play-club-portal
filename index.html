@@ -493,6 +493,14 @@ body {
         <span class="brow-label">Social Value to Cost Ratio</span>
         <span class="brow-value" id="bSROI">—</span>
       </div>
+      <div class="brow" id="perPlayerRow" style="display:none;">
+        <span class="brow-label">Per Player</span>
+        <span class="brow-value" id="bPerPlayer">—</span>
+      </div>
+      <div class="brow" id="perMemberRow" style="display:none;">
+        <span class="brow-label">Per Club Member</span>
+        <span class="brow-value" id="bPerMember">—</span>
+      </div>
       <div id="imdSection" style="display:none;">
         <div class="imd-badge">
           📍 Area Deprivation (IMD): Decile <strong id="bIMD">—</strong>
@@ -674,6 +682,8 @@ function transformSubmission(row) {
     volunteers:    fmtCurrency(row.vol_value),
     community:     fmtCurrency(row.community_value),
     sroi:          row.sroi ? Number(row.sroi).toFixed(2) : null,
+    per_player:    row.total_players > 0 ? fmtCurrency(Math.round(row.total_value / row.total_players)) : null,
+    per_member:    (row.total_players + (row.num_volunteers || 0)) > 0 ? fmtCurrency(Math.round(row.total_value / (row.total_players + (row.num_volunteers || 0)))) : null,
     imd_decile:    row.imd_decile || row.simd_decile,
     simd_decile:   row.simd_decile,
     country:       row.country || 'England',
@@ -764,6 +774,16 @@ function renderDashboard(d) {
   if (d.sroi) {
     set('bSROI', '£' + d.sroi + ' per £1 invested');
     show('sroiRow');
+  }
+
+  if (d.per_player) {
+    set('bPerPlayer', d.per_player + ' per player');
+    show('perPlayerRow');
+  }
+
+  if (d.per_member) {
+    set('bPerMember', d.per_member + ' per club member (players + volunteers)');
+    show('perMemberRow');
   }
 
   if (d.imd_decile) {
