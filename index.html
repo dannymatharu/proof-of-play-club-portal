@@ -688,6 +688,8 @@ function transformSubmission(row) {
     simd_decile:   row.simd_decile,
     country:       row.country || 'England',
     charter:       row.charter_level,
+    county_fa:     (row.form_state && (row.form_state.countyFA || row.form_state.countyFAOther || row.form_state.govBody)) || null,
+    year_founded:  (row.form_state && row.form_state.yearFounded) || null,
     report_text:   row.report_text,
     press_text:    row.press_text,
     social_text:   row.social_text,
@@ -695,6 +697,41 @@ function transformSubmission(row) {
     created_at:    row.created_at,
     token:         row.token
   };
+}
+
+// ─── PRESS NOTES BUILDER ─────────────────────────────────
+// Generates a fresh Notes to Editors block from club data so that
+// existing submissions always show the current template, not whatever
+// was stored at submission time.
+function buildPressNotes(d) {
+  const club = d.club_name || 'The club';
+  const isGrassroots = d.tool_version === 'grassroots';
+
+  const charterMap = {
+    star1: 'England Football Accredited — 1 Star',
+    star2: 'England Football Accredited — 2 Star',
+    star3: 'England Football Accredited — 3 Star'
+  };
+  const charter = (!isGrassroots) ? (charterMap[d.charter] || '') : '';
+  const foundedNote = d.year_founded ? `${club} was founded in ${d.year_founded} and is` : `${club} is`;
+  const cfaStr = d.county_fa ? `affiliated to ${d.county_fa}` : 'affiliated to [your governing body]';
+  const charterNote = charter ? ` The club holds ${charter} status.` : '';
+
+  const aboutPoP = isGrassroots
+    ? `About Proof of Play: Proof of Play is a social value calculator for sports clubs and Active Partnerships. It helps clubs turn participation, volunteering and community activity into funder-ready evidence, including a social value report, one-page summary, press release, social media posts and funding guidance.`
+    : `About Proof of Play: Proof of Play is a social value calculator for football clubs and academies. It helps clubs turn participation, volunteering and community activity into funder-ready evidence, including a social value report, one-page summary, press release, social media posts and funding guidance.`;
+
+  const aboutOrg = isGrassroots
+    ? `About withinu: withinu delivers mental health and neurodiversity support tools across community sport, education and community organisations.`
+    : `About the Football Mental Health Alliance: The Football Mental Health Alliance delivers mental health and neurodiversity training, tools and resources across football, supporting clubs, academies, coaches, players, families, volunteers and all football organisations.`;
+
+  const contactLine = isGrassroots
+    ? `Proof of Play / withinu contact: Danny Matharu | danny@withinu.net | 03330 500 399\n\nwww.withinu.net\nwww.thefundingbench.uk`
+    : `Proof of Play / FMHA contact: Danny Matharu | danny@withinu.net | 03330 500 399\n\nwww.proofofplay.uk\nwww.thefundingbench.uk\nwww.vault.thefmha.com`;
+
+  const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  return `NOTES TO EDITORS:\n\nAbout ${club}: ${foundedNote} ${cfaStr}.${charterNote} The club supports players, volunteers and families across the local community.\n\nAbout the figures: The social value figures are evidence-informed estimates produced using HM Treasury's WELLBY methodology and Sport England's Social Value Model Year 2. A 40% deadweight assumption has been applied to benefit values. These are not independently audited valuations and should be presented as estimates.\n\nClubs may wish to lead with the figure most relevant to their context. Clubs with higher operating costs may find the Social Value Per Player or Social Value Per Club Member figure more representative of their community contribution than the Social Value to Cost Ratio.\n\n${aboutPoP}\n\nProof of Play also connects to The Funding Bench, helping clubs move from evidence to action. Once a club has completed its Proof of Play submission, its profile can be used to match and rank live funding opportunities based on factors such as sport, location, legal structure, funding need and deprivation status. This gives clubs a clearer route to relevant grants, helps them understand which funds they can realistically apply for, and strengthens conversations with funders, sponsors, councils and local partners.\n\n${aboutOrg}\n\nCOMPLETE THIS SECTION BEFORE DISTRIBUTING:\nName:\nPosition:\n${club}\nYour Telephone Number:\nYour email address:\n\n${contactLine}\n\nDate: ${date}`;
 }
 
 async function loadDashboard() {
@@ -826,6 +863,18 @@ function renderDashboard(d) {
       show(s.sectionId);
     }
   });
+
+  // Replace the Notes to Editors in the stored press_text with the current
+  // template — so existing submissions always show the latest boilerplate
+  // without needing to re-submit.
+  const pressEl = document.getElementById('pressText');
+  if (pressEl && pressEl.textContent) {
+    const notesIdx = pressEl.textContent.indexOf('NOTES TO EDITORS:');
+    if (notesIdx !== -1) {
+      const bodyText = pressEl.textContent.substring(0, notesIdx);
+      pressEl.textContent = bodyText + buildPressNotes(d);
+    }
+  }
 
   if (d.created_at) {
     const date = new Date(d.created_at).toLocaleDateString('en-GB', {
