@@ -613,7 +613,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 function show(id)  { document.getElementById(id).style.display = ''; }
 function hide(id)  { document.getElementById(id).style.display = 'none'; }
-function set(id, v){ document.getElementById(id).textContent = v; }
+function set(id, v){ const el = document.getElementById(id); if (el) el.textContent = v; }
 
 // ─── CURRENCY FORMATTER ─────────────────────────────────
 // Matches the calculator's sidebar format exactly:
@@ -803,7 +803,7 @@ function renderDashboard(d) {
   set('bWellbeing',  d.wellbeing  || '—');
   set('bNHS',        d.nhs        || '—');
   set('bVolunteers', d.volunteers || '—');
-  set('bCommunity',  d.community  || '—');
+  // set('bCommunity', ...) removed — community value not currently displayed
 
   if (d.sroi) {
     set('bSROI', '£' + d.sroi + ' per £1 invested');
