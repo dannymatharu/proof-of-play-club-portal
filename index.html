@@ -616,10 +616,6 @@ function hide(id)  { document.getElementById(id).style.display = 'none'; }
 function set(id, v){ const el = document.getElementById(id); if (el) el.textContent = v; }
 
 // ─── CURRENCY FORMATTER ─────────────────────────────────
-// Matches the calculator's sidebar format exactly:
-//   1,154,626 → £1.15M
-//   808,800   → £809K
-//   24,050    → £24K
 function fmtCurrency(n) {
   if (n === null || n === undefined || n === '') return '—';
   const num = Number(n);
@@ -630,13 +626,6 @@ function fmtCurrency(n) {
 }
 
 // ─── CHARTER / ACCREDITATION LABEL ──────────────────────
-// club_submissions stores the raw enum code (e.g. "star2"). The dashboard
-// needs the human-readable label so a non-FA reader (grant assessor, sponsor,
-// committee member) actually knows what they're looking at.
-//
-// FA rebranded "Charter Standard" to "England Football Accreditation" in 2021,
-// so older submissions may carry charter / development / community codes
-// (legacy scheme). Both are respected here — we don't force-migrate the label.
 const FOOTBALL_CHARTER_LABELS = {
   star1:       'England Football Accredited — 1 Star',
   star2:       'England Football Accredited — 2 Star',
@@ -649,15 +638,10 @@ const FOOTBALL_CHARTER_LABELS = {
 function charterDisplayLabel(code, tool) {
   if (!code || code === 'none') return '';
   if (tool === 'football') return FOOTBALL_CHARTER_LABELS[code] || '';
-  // Grassroots tool doesn't currently surface an accreditation selector —
-  // hide the pill unless/until sport-specific accreditation mappings are added.
   return '';
 }
 
 // ─── DATA TRANSFORM ─────────────────────────────────────
-// Reads a raw club_submissions row and returns the shape renderDashboard
-// expects. This lets us read directly from the source of truth rather than
-// relying on the apps-script-maintained club_portal_tokens mirror table.
 function transformSubmission(row) {
   const area =
     (row.form_state && (row.form_state.area || row.form_state.town)) ||
@@ -697,9 +681,6 @@ function transformSubmission(row) {
 }
 
 // ─── PRESS NOTES BUILDER ─────────────────────────────────
-// Generates a fresh Notes to Editors block from club data so that
-// existing submissions always show the current template, not whatever
-// was stored at submission time.
 function buildPressNotes(d) {
   const club = d.club_name || 'The club';
   const isGrassroots = d.tool_version === 'grassroots';
@@ -732,7 +713,6 @@ function buildPressNotes(d) {
 }
 
 async function loadDashboard() {
-  // Read token from URL
   const params = new URLSearchParams(window.location.search);
   const token  = params.get('token');
 
@@ -743,8 +723,6 @@ async function loadDashboard() {
   }
 
   try {
-    // Read directly from club_submissions (source of truth). No dependency on
-    // the apps-script → club_portal_tokens bridge, which was silently failing.
     const res = await fetch(
       `${SUPABASE_URL}/rest/v1/club_submissions?token=eq.${encodeURIComponent(token)}&limit=1`,
       { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
@@ -763,6 +741,14 @@ async function loadDashboard() {
     const d = transformSubmission(rows[0]);
 
     renderDashboard(d);
+
+    // Demo mode — hides edit buttons so the portal can be shared publicly
+    if (params.get('demo') === '1') {
+      const editTop = document.getElementById('editTop');
+      if (editTop) editTop.style.display = 'none';
+      const editCta = document.getElementById('editCtaCard');
+      if (editCta) editCta.style.display = 'none';
+    }
 
   } catch (err) {
     console.error('Dashboard load error:', err);
@@ -803,7 +789,6 @@ function renderDashboard(d) {
   set('bWellbeing',  d.wellbeing  || '—');
   set('bNHS',        d.nhs        || '—');
   set('bVolunteers', d.volunteers || '—');
-  // set('bCommunity', ...) removed — community value not currently displayed
 
   if (d.sroi) {
     set('bSROI', '£' + d.sroi + ' per £1 invested');
@@ -823,7 +808,6 @@ function renderDashboard(d) {
   if (d.imd_decile) {
     const isScottish = d.country === 'Scotland' || d.tool_version === 'scottish_football';
     const depLabel = isScottish ? 'SIMD' : 'IMD';
-    // Update the label text if possible
     const imdLabelEl = document.querySelector('#imdSection .breakdown-label, #imdSection td:first-child');
     if (imdLabelEl) imdLabelEl.innerHTML = '📍 Area Deprivation (' + depLabel + '): Decile <strong id="bIMD">' + d.imd_decile + '</strong>';
     set('bIMD', d.imd_decile);
@@ -844,9 +828,6 @@ function renderDashboard(d) {
     show('charterSection');
   }
 
-  // Render each content section if the calculator persisted text for it.
-  // Older submissions (pre press_text/social_text/funding_text columns) will
-  // only have report_text populated; the other three sections stay hidden.
   const sections = [
     { key: 'report_text',  textId: 'reportText',  sectionId: 'reportSection'  },
     { key: 'press_text',   textId: 'pressText',   sectionId: 'pressSection'   },
@@ -861,9 +842,6 @@ function renderDashboard(d) {
     }
   });
 
-  // Replace the Notes to Editors in the stored press_text with the current
-  // template — so existing submissions always show the latest boilerplate
-  // without needing to re-submit.
   const pressEl = document.getElementById('pressText');
   if (pressEl && pressEl.textContent) {
     const notesIdx = pressEl.textContent.indexOf('NOTES TO EDITORS:');
@@ -877,13 +855,10 @@ function renderDashboard(d) {
     const date = new Date(d.created_at).toLocaleDateString('en-GB', {
       day: 'numeric', month: 'long', year: 'numeric'
     });
-    // Brand attribution swaps to withinu for the all-sport (grassroots) edition;
-    // FMHA stays for football editions (default + Scottish).
     const submitBrand = d.tool_version === 'grassroots' ? 'withinu' : 'FMHA';
     set('submittedNote', 'Submitted ' + date + ' · Proof of Play by ' + submitBrand);
   }
 
-  // The URL token is also the edit token — same UUID, same row, one table.
   const calcBase = d.tool_version === 'scottish_football'
     ? 'https://dannymatharu.github.io/proof-of-play-scottish-football/'
     : d.tool_version === 'grassroots'
@@ -891,8 +866,6 @@ function renderDashboard(d) {
     : 'https://dannymatharu.github.io/proof-of-play-football/';
   const editUrl = calcBase + '?token=' + encodeURIComponent(d.token);
 
-  // Hydrate the top edit link (small, subtle — for returning users who just
-  // want to update numbers and leave).
   const topLink = document.getElementById('editTopLink');
   const topWrap = document.getElementById('editTop');
   if (topLink && topWrap) {
@@ -900,7 +873,6 @@ function renderDashboard(d) {
     topWrap.style.display = 'block';
   }
 
-  // Hydrate the bottom CTA card (prominent — final call to action).
   const ctaLink = document.getElementById('editCtaLink');
   const ctaCard = document.getElementById('editCtaCard');
   if (ctaLink && ctaCard) {
@@ -908,7 +880,6 @@ function renderDashboard(d) {
     ctaCard.style.display = 'block';
   }
 
-  // Funding Bench CTA — token handoff skips their onboarding and lands straight on matched grants
   const fbLink  = document.getElementById('fundingBenchLink');
   const fbCta   = document.getElementById('fundingBenchCta');
   const fbLabel = document.getElementById('fundingBenchLabel');
@@ -918,7 +889,6 @@ function renderDashboard(d) {
     fbLabel.style.display = 'block';
   }
 
-  // Hydrate the share card CTA.
   const shareLink = document.getElementById('shareCardLink');
   const shareSection = document.getElementById('shareCardSection');
   if (shareLink && shareSection) {
@@ -940,10 +910,7 @@ function renderDashboard(d) {
     if (fundDesc) fundDesc.textContent = 'Ready-to-use paragraphs for each funder your evidence supports — sportscotland, Scottish Football Facilities Fund, Scottish Football Partnership Trust, Awards for All Scotland and more.';
   }
 
-  // Adapt branding for all-sport (grassroots) clubs — swaps the FMHA football
-  // brand off the page entirely and replaces it with withinu, the cross-sport
-  // brand. Methodology text is unchanged because the all-sport calculator uses
-  // the same Sport England Year 2 model as football.
+  // Adapt branding for all-sport (grassroots) clubs
   if (d.tool_version === 'grassroots') {
     const heroEd = document.getElementById('heroEdition');
     if (heroEd) heroEd.textContent = 'Proof of Play · withinu · All Sport Edition';
@@ -956,7 +923,7 @@ function renderDashboard(d) {
   document.getElementById('dashboard').style.display = 'block';
 }
 
-// Generic copy handler — works for any of the four content sections.
+// Generic copy handler
 function copyText(textElId, btnId, restoreLabel) {
   const text = document.getElementById(textElId).textContent;
   navigator.clipboard.writeText(text).then(() => {
@@ -971,7 +938,6 @@ function copyText(textElId, btnId, restoreLabel) {
   });
 }
 
-// Kick off on load
 loadDashboard();
 </script>
 </body>
