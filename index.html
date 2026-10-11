@@ -434,9 +434,9 @@ body {
     <div class="hero-eyebrow" id="heroEdition">Proof of Play · FMHA Football Edition</div>
     <div class="hero-club" id="heroClub">Club Name</div>
     <div class="hero-area" id="heroArea">Area</div>
-    <div class="hero-value-label">Estimated Annual Social Value</div>
+    <div class="hero-value-label">Estimated social value the club adds each year</div>
     <div class="hero-value" id="heroValue">£0</div>
-    <div class="hero-methodology" id="heroMethodology">HM Treasury WELLBY methodology · Sport England Social Value Model Year 2 (November 2025)</div>
+    <div class="hero-methodology" id="heroMethodology">Sport England social value model, Year 2 (Nov 2025) · after a 40% deduction for what would have happened anyway</div>
   </div>
 
   <!-- Body -->
@@ -458,15 +458,15 @@ body {
         <div class="stat-num" id="statVol">0</div>
         <div class="stat-lbl">Volunteers</div>
       </div>
-      <div class="stat-box" title="Based on national prevalence data (NHS Digital, British Dyslexia Association). Statistical estimate — not diagnosed individuals.">
+      <div class="stat-box" title="Proof of Play's own estimate from published figures for individual conditions. Not diagnosed individuals. No £ value attached.">
         <div class="stat-num" id="statND">0</div>
-        <div class="stat-lbl">Est. ND Participants</div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.4;">Based on 14% national prevalence</div>
+        <div class="stat-lbl">Est. neurodivergent players</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.4;">Planning estimate (default 14%)</div>
       </div>
-      <div class="stat-box" title="Based on NHS Digital MHCYP 2023 prevalence data (1 in 5). Statistical estimate — not diagnosed individuals.">
+      <div class="stat-box" title="National prevalence by age: NHS England MHCYP 2023 and Adult Psychiatric Morbidity Survey 2023/4. Not diagnosed individuals. No £ value attached.">
         <div class="stat-num" id="statMH">0</div>
-        <div class="stat-lbl">Est. MH Need</div>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.4;">Based on 1-in-5 prevalence (NHS Digital)</div>
+        <div class="stat-lbl">Est. players with a mental health condition</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px;line-height:1.4;">National prevalence by age (NHS England)</div>
       </div>
     </div>
 
@@ -478,7 +478,7 @@ body {
         <span class="brow-value" id="bWellbeing">—</span>
       </div>
       <div class="brow">
-        <span class="brow-label">Health &amp; Productivity Savings</span>
+        <span class="brow-label">Health &amp; Productivity Value</span>
         <span class="brow-value" id="bNHS">—</span>
       </div>
       <div class="brow">
@@ -514,7 +514,7 @@ body {
     <div class="use-grid">
       <div class="use-box">
         <h4>Grant applications</h4>
-        <p id="useBoxGrantText">These figures meet the evidence requirements for Sport England Movement Fund, Football Foundation grants, and local authority funding bids. Cite as "evidence-based estimates using HM Treasury WELLBY methodology."</p>
+        <p id="useBoxGrantText">Use these figures as supporting evidence for Sport England Movement Fund, Football Foundation and local authority funding bids. Cite as "estimates using Sport England's social value model (Year 2, Nov 2025), Proof of Play methodology v2.0."</p>
       </div>
       <div class="use-box">
         <h4>AGM &amp; committee</h4>
@@ -602,7 +602,7 @@ body {
   <!-- Footer -->
   <footer class="dash-footer">
     <div class="footer-text" id="footerPoweredBy">Proof of Play is powered by <strong>FMHA</strong> · T: 03330 500 399 · E: danny@withinu.net</div>
-    <div class="footer-text" id="footerMethodology">Figures are evidence-based estimates using HM Treasury WELLBY methodology and Sport England's Social Value Model Year 2 (November 2025). Not a formal audit.</div>
+    <div class="footer-text" id="footerMethodology">Figures are estimates using Sport England's social value model (Year 2, Nov 2025), after a 40% deduction for what would have happened anyway. Proof of Play methodology v2.0. Not a formal audit.</div>
   </footer>
 
 </div><!-- /dashboard -->
@@ -676,6 +676,8 @@ function transformSubmission(row) {
     social_text:   row.social_text,
     funding_text:  row.funding_text,
     created_at:    row.created_at,
+    updated_at:    row.updated_at,
+    methodology_version: row.methodology_version,
     token:         row.token
   };
 }
@@ -709,7 +711,7 @@ function buildPressNotes(d) {
 
   const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  return `NOTES TO EDITORS:\n\nAbout ${club}: ${foundedNote} ${cfaStr}.${charterNote} The club supports players, volunteers and families across the local community.\n\nAbout the figures: The social value figures are evidence-informed estimates produced using HM Treasury's WELLBY methodology and Sport England's Social Value Model Year 2. A 40% deadweight assumption has been applied to benefit values. These are not independently audited valuations and should be presented as estimates.\n\nClubs may wish to lead with the figure most relevant to their context. Clubs with higher operating costs may find the Social Value Per Player or Social Value Per Club Member figure more representative of their community contribution than the Social Value to Cost Ratio.\n\n${aboutPoP}\n\nProof of Play also connects to The Funding Bench, helping clubs move from evidence to action. Once a club has completed its Proof of Play submission, its profile can be used to match and rank live funding opportunities based on factors such as sport, location, legal structure, funding need and deprivation status. This gives clubs a clearer route to relevant grants, helps them understand which funds they can realistically apply for, and strengthens conversations with funders, sponsors, councils and local partners.\n\n${aboutOrg}\n\nCOMPLETE THIS SECTION BEFORE DISTRIBUTING:\nName:\nPosition:\n${club}\nYour Telephone Number:\nYour email address:\n\n${contactLine}\n\nDate: ${date}`;
+  return `NOTES TO EDITORS:\n\nAbout ${club}: ${foundedNote} ${cfaStr}.${charterNote} The club supports players, volunteers and families across the local community.\n\nAbout the figures: The social value figures are evidence-informed estimates produced by applying Sport England's social value model (Year 2, Nov 2025) to the club's own numbers, with a 40% deduction (Proof of Play's own assumption) for what would have happened anyway. Methodology v2.0. These are not independently audited valuations and should be presented as estimates.\n\nClubs may wish to lead with the figure most relevant to their context. Clubs with higher operating costs may find the Social Value Per Player or Social Value Per Club Member figure more representative of their community contribution than the Social Value to Cost Ratio.\n\n${aboutPoP}\n\nProof of Play also connects to The Funding Bench, helping clubs move from evidence to action. Once a club has completed its Proof of Play submission, its profile can be used to match and rank live funding opportunities based on factors such as sport, location, legal structure, funding need and deprivation status. This gives clubs a clearer route to relevant grants, helps them understand which funds they can realistically apply for, and strengthens conversations with funders, sponsors, councils and local partners.\n\n${aboutOrg}\n\nCOMPLETE THIS SECTION BEFORE DISTRIBUTING:\nName:\nPosition:\n${club}\nYour Telephone Number:\nYour email address:\n\n${contactLine}\n\nDate: ${date}`;
 }
 
 async function loadDashboard() {
@@ -791,7 +793,7 @@ function renderDashboard(d) {
   set('bVolunteers', d.volunteers || '—');
 
   if (d.sroi) {
-    set('bSROI', '£' + d.sroi + ' per £1 invested');
+    set('bSROI', '£' + d.sroi + ' per £1 the club costs to run');
     show('sroiRow');
   }
 
@@ -856,7 +858,8 @@ function renderDashboard(d) {
       day: 'numeric', month: 'long', year: 'numeric'
     });
     const submitBrand = d.tool_version === 'grassroots' ? 'withinu' : 'FMHA';
-    set('submittedNote', 'Submitted ' + date + ' · Proof of Play by ' + submitBrand);
+    const recalc = d.methodology_version ? (' · Methodology v' + d.methodology_version + (d.updated_at ? ', calculated ' + new Date(d.updated_at).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}) : '')) : ' · Calculated with an earlier methodology';
+    set('submittedNote', 'Submitted ' + date + recalc + ' · Proof of Play by ' + submitBrand);
   }
 
   const calcBase = d.tool_version === 'scottish_football'
