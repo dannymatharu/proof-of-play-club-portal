@@ -685,7 +685,8 @@ function transformSubmission(row) {
 // ─── PRESS NOTES BUILDER ─────────────────────────────────
 function buildPressNotes(d) {
   const club = d.club_name || 'The club';
-  const isGrassroots = d.tool_version === 'grassroots';
+  const isRfu = d.tool_version === 'rugby_rfu';
+  const isGrassroots = d.tool_version === 'grassroots' || isRfu;
 
   const charterMap = {
     star1: 'England Football Accredited — 1 Star',
@@ -711,7 +712,7 @@ function buildPressNotes(d) {
 
   const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-  return `NOTES TO EDITORS:\n\nAbout ${club}: ${foundedNote} ${cfaStr}.${charterNote} The club supports players, volunteers and families across the local community.\n\nAbout the figures: The social value figures are evidence-informed estimates produced by applying Sport England's social value model (Year 2, Nov 2025) to the club's own numbers, with a 40% deduction (Proof of Play's own assumption) for what would have happened anyway. Methodology v2.0. These are not independently audited valuations and should be presented as estimates.\n\nClubs may wish to lead with the figure most relevant to their context. Clubs with higher operating costs may find the Social Value Per Player or Social Value Per Club Member figure more representative of their community contribution than the Social Value to Cost Ratio.\n\n${aboutPoP}\n\nProof of Play also connects to The Funding Bench, helping clubs move from evidence to action. Once a club has completed its Proof of Play submission, its profile can be used to match and rank live funding opportunities based on factors such as sport, location, legal structure, funding need and deprivation status. This gives clubs a clearer route to relevant grants, helps them understand which funds they can realistically apply for, and strengthens conversations with funders, sponsors, councils and local partners.\n\n${aboutOrg}\n\nCOMPLETE THIS SECTION BEFORE DISTRIBUTING:\nName:\nPosition:\n${club}\nYour Telephone Number:\nYour email address:\n\n${contactLine}\n\nDate: ${date}`;
+  return `NOTES TO EDITORS:\n\nAbout ${club}: ${foundedNote} ${cfaStr}.${charterNote} The club supports players, volunteers and families across the local community.\n\nAbout the figures: The social value figures are evidence-informed estimates produced by ${isRfu ? "applying Sport England's social value model (Year 2, Nov 2025) to the club's own numbers, counting value only for players who would otherwise not be active, following the RFU's Enriching Lives (2024) approach. Methodology v2.0-RFU." : "applying Sport England's social value model (Year 2, Nov 2025) to the club's own numbers, with a 40% deduction (Proof of Play's own assumption) for what would have happened anyway. Methodology v2.0."} These are not independently audited valuations and should be presented as estimates.\n\nClubs may wish to lead with the figure most relevant to their context. Clubs with higher operating costs may find the Social Value Per Player or Social Value Per Club Member figure more representative of their community contribution than the Social Value to Cost Ratio.\n\n${aboutPoP}\n\nProof of Play also connects to The Funding Bench, helping clubs move from evidence to action. Once a club has completed its Proof of Play submission, its profile can be used to match and rank live funding opportunities based on factors such as sport, location, legal structure, funding need and deprivation status. This gives clubs a clearer route to relevant grants, helps them understand which funds they can realistically apply for, and strengthens conversations with funders, sponsors, councils and local partners.\n\n${aboutOrg}\n\nCOMPLETE THIS SECTION BEFORE DISTRIBUTING:\nName:\nPosition:\n${club}\nYour Telephone Number:\nYour email address:\n\n${contactLine}\n\nDate: ${date}`;
 }
 
 async function loadDashboard() {
@@ -857,13 +858,15 @@ function renderDashboard(d) {
     const date = new Date(d.created_at).toLocaleDateString('en-GB', {
       day: 'numeric', month: 'long', year: 'numeric'
     });
-    const submitBrand = d.tool_version === 'grassroots' ? 'withinu' : 'FMHA';
+    const submitBrand = (d.tool_version === 'grassroots' || d.tool_version === 'rugby_rfu') ? 'withinu' : 'FMHA';
     const recalc = d.methodology_version ? (' · Methodology v' + d.methodology_version + (d.updated_at ? ', calculated ' + new Date(d.updated_at).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'}) : '')) : ' · Calculated with an earlier methodology';
     set('submittedNote', 'Submitted ' + date + recalc + ' · Proof of Play by ' + submitBrand);
   }
 
   const calcBase = d.tool_version === 'scottish_football'
     ? 'https://dannymatharu.github.io/proof-of-play-scottish-football/'
+    : d.tool_version === 'rugby_rfu'
+    ? 'https://dannymatharu.github.io/proof-of-play-grassroots/rugby/'
     : d.tool_version === 'grassroots'
     ? 'https://dannymatharu.github.io/proof-of-play-grassroots/'
     : 'https://dannymatharu.github.io/proof-of-play-football/';
@@ -917,6 +920,18 @@ function renderDashboard(d) {
   if (d.tool_version === 'grassroots') {
     const heroEd = document.getElementById('heroEdition');
     if (heroEd) heroEd.textContent = 'Proof of Play · withinu · All Sport Edition';
+    const footPower = document.getElementById('footerPoweredBy');
+    if (footPower) footPower.innerHTML = 'Proof of Play is powered by <strong>withinu</strong> · T: 03330 500 399 · E: danny@withinu.net';
+  }
+
+  // RFU edition (rugby union): different counterfactual, so different method wording
+  if (d.tool_version === 'rugby_rfu') {
+    const heroEd = document.getElementById('heroEdition');
+    if (heroEd) heroEd.textContent = 'Proof of Play · withinu · Rugby Union (RFU edition)';
+    const heroMeth = document.getElementById('heroMethodology');
+    if (heroMeth) heroMeth.textContent = "Sport England social value model, Year 2 (Nov 2025) · counted only for players who would otherwise not be active (RFU Enriching Lives approach)";
+    const footMeth = document.getElementById('footerMethodology');
+    if (footMeth) footMeth.textContent = "Figures are estimates using Sport England's social value model (Year 2, Nov 2025), counting value only for players who would otherwise not be active, as in the RFU's Enriching Lives (2024) study. Proof of Play methodology v2.0-RFU. Not a formal audit.";
     const footPower = document.getElementById('footerPoweredBy');
     if (footPower) footPower.innerHTML = 'Proof of Play is powered by <strong>withinu</strong> · T: 03330 500 399 · E: danny@withinu.net';
   }
