@@ -615,11 +615,26 @@ async function loadDashboard() {
   }
 
   try {
-    // Read directly from club_submissions (source of truth). No dependency on
-    // the apps-script → club_portal_tokens bridge, which was silently failing.
+    // Read via the get_club_submission_by_token RPC, not a direct table SELECT.
+    // club_submissions has had RLS enabled since 18 Oct 2026 with no SELECT policy
+    // for anon (deliberately — a direct SELECT would let one club's token list
+    // every other club's token). A plain table read here silently comes back with
+    // zero rows for every club, not just ones whose submission failed to save —
+    // this dashboard was broken for everyone, not only the cases that looked like
+    // a missing submission. The RPC is a SECURITY DEFINER function created
+    // specifically for this: it looks up by token server-side and bypasses RLS
+    // internally, without opening up a general SELECT policy on the table.
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/club_submissions?token=eq.${encodeURIComponent(token)}&limit=1`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } }
+      `${SUPABASE_URL}/rest/v1/rpc/get_club_submission_by_token`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ p_token: token })
+      }
     );
 
     if (!res.ok) throw new Error('Fetch failed: ' + res.status);
